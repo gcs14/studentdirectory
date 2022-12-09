@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -42,25 +43,37 @@ public class StudentService {
     }
 
     @Transactional
-    public void updateStudent(Long studentId, String name, String email) {
-        Student student = studentRepository.findById(studentId)
+    public void updateStudent(Long studentId, Student updatedStudent) {
+        Student currentStudent = studentRepository.findById(studentId)
                 .orElseThrow(() -> new IllegalStateException(
                         "student with id " + studentId + " does not exist"));
 
-        if (name != null &&
-                name.length() > 0 &&
-                !Objects.equals(student.getName(), name)) {
-            student.setName(name);
+        String updatedStudentName = updatedStudent.getName();
+        String updatedStudentEmail = updatedStudent.getEmail();
+        LocalDate updatedStudentDob = updatedStudent.getDob();
+
+        //name upgrade --> make functional
+        if (updatedStudentName != null &&
+                updatedStudentName.length() > 0 &&
+                !Objects.equals(currentStudent.getName(), updatedStudentName)) {
+            currentStudent.setName(updatedStudentName);
         }
-        if (email != null &&
-                email.length() > 0 &&
-                !Objects.equals(student.getEmail(), email)) {
+
+        //email upgrade --> make functional
+        if (updatedStudentEmail != null &&
+                updatedStudentEmail.length() > 0 &&
+                !Objects.equals(currentStudent.getEmail(), updatedStudentEmail)) {
             Optional<Student> studentOptional = studentRepository
-                    .findStudentByEmail(email);
+                    .findStudentByEmail(updatedStudentEmail);
             if (studentOptional.isPresent()) {
                 throw new IllegalStateException("email taken");
             }
-            student.setEmail(email);
+            currentStudent.setEmail(updatedStudentEmail);
+        }
+
+        //make a date of birth upgrade
+        if (currentStudent.getDob() != updatedStudentDob){
+            currentStudent.setDob(updatedStudentDob);
         }
 
     }
